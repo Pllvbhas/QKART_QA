@@ -61,12 +61,9 @@ public class Register {
 
         // Click the register now button
         register_now_button.click();
-
-
-        // SLEEP_STMT_06: Wait for new user to get created in the backend
+        Thread.sleep(3000);
 
         this.lastGeneratedUsername = test_data_username;
-
         return this.driver.getCurrentUrl().endsWith("/login");
     }
 }

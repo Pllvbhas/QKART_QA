@@ -1,18 +1,22 @@
 package QKART_SANITY_LOGIN.Module1;
 
 import java.sql.Timestamp;
-
+import java.time.Duration;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class Register {
     RemoteWebDriver driver;
     String url = "https://crio-qkart-frontend-qa.vercel.app/register";
     public String lastGeneratedUsername = "";
+    private Object until;
 
     public Register(RemoteWebDriver driver) {
         this.driver = driver;
@@ -57,16 +61,22 @@ public class Register {
         confirm_password_txt_box.sendKeys(test_data_password);
 
         // Find the register now button
-        WebElement register_now_button = this.driver.findElement(By.className("button"));
+        WebElement register_now_button = this.driver.findElement(By.xpath("//button[text()='Register Now']"));
 
         // Click the register now button
         register_now_button.click();
-
+        //Thread.sleep(2000);
+      
+        FluentWait<WebDriver> wait = new FluentWait<WebDriver>(driver).withTimeout((Duration.ofSeconds(30L))).pollingEvery(Duration.ofMillis(250)).ignoring(Exception.class);
+        //Wait wait = new FluentWait<WebDriver>(driver).withTimeout(Duration.ofSeconds(30)).pollingEvery(Duration.ofMillis(250)).ignoring(Exception.class);
+        wait.until(ExpectedConditions.or(ExpectedConditions.urlContains("/login"),ExpectedConditions.visibilityOfElementLocated(By.id("notistack-snackbar"))));
 
         // SLEEP_STMT_06: Wait for new user to get created in the backend
+        //until.wait();
 
         this.lastGeneratedUsername = test_data_username;
 
         return this.driver.getCurrentUrl().endsWith("/login");
+       
     }
 }

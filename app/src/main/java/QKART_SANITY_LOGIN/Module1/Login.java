@@ -41,14 +41,18 @@ public class Login {
         password_txt_box.sendKeys(Password);
 
         // Find the Login Button
-        WebElement login_button = driver.findElement(By.className("button"));
+        WebElement login_button = driver.findElement(By.xpath("//button[text()='Login to QKart']"));
 
         // Click the login Button
-        login_button.click();
+       
 
         // SLEEP_STMT_13: Wait for Login to Complete
         // Wait for Login action to complete
-        Thread.sleep(5000);
+       // Thread.sleep(5000);
+       FluentWait<WebDriver> wait = new FluentWait<WebDriver>(driver).withTimeout((Duration.ofSeconds(30L)))
+         .pollingEvery(Duration.ofMillis(250)).ignoring(Exception.class);
+      wait.until(ExpectedConditions.elementToBeClickable(login_button));
+      login_button.click();
 
         return this.VerifyUserLoggedIn(Username);
     }

@@ -785,99 +785,143 @@ public class QkartSanity {
         takeScreenshot(driver, "end", "Test Case 11: Verified Contact us");
         return status;
     }
+
     public static Boolean TestCase12(RemoteWebDriver driver) throws InterruptedException {
-        try {
-            // TODO: CRIO_TASK_MODULE_SYNCHRONISATION -
-            Boolean status = false;
-            logStatus("Start TestCase", "Test Case 12: Verify advertisement displayed on checkout page", "DONE");
-            List<String> expectedResult = Arrays.asList("YONEX Smash Badminton Racquet");  
-    
-            //1. Register a new user on QKart
-            Register registration = new Register(driver);
-            registration.navigateToRegisterPage();
-            status = registration.registerUser("testUser", "abc@123", true);
-            logStatus("Test Step ", "Test Case 12 : User registration ", status ? "PASS" : "FAIL");
-           
-            // Save the last generated username
-            lastGeneratedUserName = registration.lastGeneratedUsername;
-    
-            //2. Login using the new user
-            Login login = new Login(driver);
-            login.navigateToLoginPage();
-            status = login.PerformLogin(lastGeneratedUserName, "abc@123");
-            logStatus("Test Step ", "Test Case 12 : User Perform Login ", status ? "PASS" : "FAIL");
-           
-            //3. Visit the QKart home page - https://crio-qkart-frontend-qa.vercel.app/
-            Home homePage = new Home(driver);
-            homePage.navigateToHome();
-            //4. Search for “YONEX Smash Badminton Racquet”
-            status = homePage.searchForProduct("YONEX Smash Badminton Racquet");
-            logStatus("Test Step ", "Test Case 12 : Search for the product ", status ? "PASS" : "FAIL");
-            //5. Add “YONEX Smash Badminton Racquet” to the cart
-            status = homePage.addProductToCart("YONEX Smash Badminton Racquet");
-            logStatus("Test Step ", "Test Case 12 : Product added to cart ", status ? "PASS" : "FAIL");
-            //Thread.sleep(1000);
-            //6. Click on the Checkout button
-            status = homePage.clickCheckout();
-            logStatus("Test Step ", "Test Case 12 : Click on the Checkout button ", status ? "PASS" : "FAIL");
-            //7. Add a new address and select it
-            Checkout checkoutPage = new Checkout(driver);
-            status = checkoutPage.addNewAddress("Addr line 1 addr Line 2 addr line 3");
-            status = checkoutPage.selectAddress("Addr line 1 addr Line 2 addr line 3");
-            logStatus("Test Step ", "Test Case 12 : Newly added address selected ", status ? "PASS" : "FAIL");
-            //8. Proceed to buy the product
-            status = checkoutPage.placeOrder();
-            logStatus("Test Step ", "Test Case 12 : Order placed ", status ? "PASS" : "FAIL");
-            WebDriverWait wait = new WebDriverWait(driver, 30);
-            wait.until(ExpectedConditions.or(
-                        ExpectedConditions.urlContains("/thanks"),
-                        ExpectedConditions.invisibilityOf(driver.findElement(By.xpath("//div[@id = 'notistack-snackbar']")))                   
-                      ));
-            //9. Once the purchase is successful, verify if ads are displayed on the final page (“/thanks”)
-            //9.1 Ensure that a total of 3 advertisements are present
-            List<WebElement> totalAdevertisements = driver.findElements(By.xpath("//iframe"));       
-            if(totalAdevertisements.size()==3)
-            {
-                logStatus("Test Step ", "Test Case 12 : Verify that a total of 3 advertisements are present", "PASS");            
-            }
-            else{
-                logStatus("Test Step ", "Test Case 12 : Verify that a total of 3 advertisements are NOT present", "FAIL");            
-            }
-    
-            //9.2 Ensure that the buttons on the 2 QKART product advertisements are clickable
-            //switch to frames
-            driver.switchTo().frame(0);
-            WebElement buyProductButtonFrame1 = driver.findElement(By.xpath("//button[contains(text(), 'Buy Now')]"));
-            buyProductButtonFrame1.click();
-            driver.navigate().back();
-            // for (WebElement eleButton : adProductButtons)
-            // {
-            //     status = wait.until(ExpectedConditions.elementToBeClickable(eleButton)).isEnabled();
-            // }
-           // logStatus("Test Step ", "Test Case 12 : Ensure that the buttons on the 2 QKART product advertisements are clickable", status ? "PASS" : "FAIL"); 
-            driver.switchTo().defaultContent();
-            driver.switchTo().frame(1);
-            WebElement buyProductButtonFrame2 = driver.findElement(By.xpath("//button[contains(text(), 'Buy Now')]"));
-            buyProductButtonFrame2.click();
-            driver.navigate().back();
-            // List<WebElement> totalProductButtons = driver.findElements(By.xpath("//button[@id = 'continue-btn']"));
-            // for (WebElement eleButton : totalProductButtons)
-            // {
-            //     status = wait.until(ExpectedConditions.elementToBeClickable(eleButton)).isEnabled();
-            // }
-            logStatus("Test Step ", "Test Case 12 : Ensure that the buttons on the 2 QKART product advertisements are clickable", status ? "PASS" : "FAIL");           
-            driver.switchTo().parentFrame();
-            logStatus("End TestCase", "Test Case 12: Verify advertisement displayed on checkout page", "DONE");
-            return status;
-                
-            } catch (Exception e) {
-                e.printStackTrace();
-                return false;
-            }
-           
+        Boolean status = false;
+        takeScreenshot(driver, "Start", "Test case 12");
+        logStatus("Start TestCase", "Test Case 12: Verify advertisements", "DONE");
+        // Visit the Registration page and register a new user
+        // TODO: CRIO_TASK_MODULE_SYNCHRONISATION -
+        // Go to the Register page
+        Register registration = new Register(driver);
+        registration.navigateToRegisterPage();
+
+        // Register a new user
+        status = registration.registerUser("testUser", "abc@123", true);
+        if (!status) {
+            logStatus("TestCase 12", "Test Case 12: advertisements Test Failed", "FAIL");
         }
-    
-    
+
+        // Save the username of the newly registered user
+        lastGeneratedUserName = registration.lastGeneratedUsername;
+
+        // Go to the login page
+        Login login = new Login(driver);
+        login.navigateToLoginPage();
+
+        // Login with the newly registered user's credentials
+        status = login.PerformLogin(lastGeneratedUserName, "abc@123");
+        if (!status) {
+            logStatus("Step Failure", "User Perform Login Failed", status ? "PASS" : "FAIL");
+            logStatus("End TestCase", "Test Case 12: advertisements Test Failed : ",
+                    status ? "PASS" : "FAIL");
+        }
+
+        // Go to the home page
+        Home homePage = new Home(driver);
+        homePage.navigateToHome();
+
+        // Find required products by searching and add them to the user's cart
+        status = homePage.searchForProduct("Yonex");
+        Thread.sleep(1000);
+        homePage.addProductToCart("YONEX Smash Badminton Racquet");
+
+        // Click on the checkout button
+        homePage.clickCheckout();
+
+        // Add a new address on the Checkout page and select it
+        Checkout checkoutPage = new Checkout(driver);
+        checkoutPage.addNewAddress("Addr line 1 addr Line 2 addr line 3");
+        checkoutPage.selectAddress("Addr line 1 addr Line 2 addr line 3");
+
+        // Place the order
+        checkoutPage.placeOrder();
+        // SLEEP_STMT_04: Wait for place order to succeed and navigate to Thanks page
+        // Thread.sleep(3000);
+        WebDriverWait wait = new WebDriverWait(driver, 30);
+        wait.until(ExpectedConditions.urlToBe("https://crio-qkart-frontend-qa.vercel.app/thanks"));
+
+
+        // Check if placing order redirected to the Thansk page
+        status = driver.getCurrentUrl().endsWith("/thanks");
+        Thread.sleep(3000);
+        WebElement viewCart1 = driver.findElement(By.xpath(
+                "//div[@class='MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-4 css-92t6i8']/iframe[1]"));
+
+        // List <WebElement> viewCart =
+        // driver.findElements(By.xpath("/html/body/div/div/div/div/div/div/button[1]"));
+        // System.out.println(viewCart.size());
+        status = viewCart1.isDisplayed();
+        // System.out.println();
+        if (status) {
+            logStatus("Verify 1 st view cart", "Test Case 12: Verify advertisements", "DONE");
+        }
+        WebElement viewCart2 = driver.findElement(By.xpath(
+                "//div[@class='MuiGrid-root MuiGrid-container MuiGrid-spacing-xs-4 css-92t6i8']/iframe[2]"));
+        status = viewCart2.isDisplayed();
+        // System.out.println();
+        if (status) {
+            logStatus("Verify 2 nd view cart", "Test Case 12: Verify advertisements", "DONE");
+        }
+        WebElement adv3 = driver.findElement(By.xpath("//iframe[@title='scroll']"));
+        status = adv3.isDisplayed();
+        if (status)
+            logStatus("Verify 3 rd view cart", "Test Case 12: Verify advertisements", "DONE");
+        // checking buttons on advertisement
+        driver.switchTo().frame(0);
+        List<WebElement> viewCart =
+                driver.findElements(By.xpath("//div[@class='action_buttons']/button[1]"));
+        for (WebElement option : viewCart) {
+            if (option.isEnabled()) {
+                option.click();
+                driver.navigate().back();
+                return status;
+            }
+        }
+        logStatus("TestCase12", "View Cart Buttons are clickable: ", status ? "Passed" : "Failed");
+        // driver.switchTo().parentFrame();
+        // driver.switchTo().frame(2);
+        List<WebElement> buyNow =
+                driver.findElements(By.xpath("//div[@class='action_buttons']/button[2]"));
+        for (WebElement buyOption : buyNow) {
+            if (buyOption.isEnabled()) {
+                buyOption.click();
+                driver.navigate().back();
+                return status;
+            }
+        }
+        logStatus("TestCase12", "Buy now Buttons is clickable: ", status ? "Passed" : "Failed");
+        driver.switchTo().parentFrame();
+        // checking buttons on advertisement
+        driver.switchTo().frame(1);
+        for (WebElement option : viewCart) {
+            if (option.isEnabled()) {
+                option.click();
+                driver.navigate().back();
+                return status;
+            }
+        }
+        logStatus("TestCase12", "View Cart Buttons are clickable: ", status ? "Passed" : "Failed");
+       
+        for (WebElement buyOption : buyNow) {
+            if (buyOption.isEnabled()) {
+                buyOption.click();
+                driver.navigate().back();
+                return status;
+            }
+        }
+        logStatus("TestCase12", "Buy now Buttons is clickable: ", status ? "Passed" : "Failed");
+
+        driver.switchTo().parentFrame();
+        
+        // Log out the user
+        homePage.PerformLogout();
+
+        logStatus("End TestCase", "Test Case 12: advertisements successful ",
+                status ? "PASS" : "FAIL");
+        takeScreenshot(driver, "end", "Testcase 12");
+        return status;
+    }
 
     public static void main(String[] args) throws InterruptedException, MalformedURLException {
         int totalTests = 0;

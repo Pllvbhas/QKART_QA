@@ -40,7 +40,7 @@ test.dependsOn startScript
 
 test {
     useTestNG() { 
-        //suites "app/src/test/java/QKART_TestNG/testng.xml"
+        suites "src/test/java/QKART_TESTNG/testng.xml"
         useDefaultListeners = true
     }
 

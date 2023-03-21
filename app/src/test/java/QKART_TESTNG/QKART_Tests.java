@@ -37,7 +37,7 @@ public class QKART_Tests {
     static RemoteWebDriver driver;
     public static String lastGeneratedUserName;
 
-     @BeforeSuite
+     @BeforeSuite (alwaysRun = true)
     public static void createDriver() throws MalformedURLException {
         // Launch Browser using Zalenium
         final DesiredCapabilities capabilities = new DesiredCapabilities();
@@ -48,9 +48,9 @@ public class QKART_Tests {
 
     /*
      * Testcase01: Verify a new user can successfully register
-     */
-         @Test
-         public void TestCase01() throws InterruptedException {
+     */  @Parameters ({"Username", "Password"})
+         @Test (description= "Verify registration happens correctly", priority= 1, groups = {"Sanity"} )
+         public void TestCase01(String Username, String Password) throws InterruptedException {
         Boolean status;
         //  logStatus("Start TestCase", "Test Case 1: Verify User Registration", "DONE");
         //  takeScreenshot(driver, "StartTestCase", "TestCase1");
@@ -58,7 +58,7 @@ public class QKART_Tests {
         // Visit the Registration page and register a new user
         Register registration = new Register(driver);
         registration.navigateToRegisterPage();
-         status = registration.registerUser("testUser", "abc@123", true);
+         status = registration.registerUser(Username, Password, true);
         assertTrue(status, "Failed to register new user");
 
         // Save the last generated username
@@ -67,7 +67,7 @@ public class QKART_Tests {
         // Visit the login page and login with the previuosly registered user
         Login login = new Login(driver);
         login.navigateToLoginPage();
-         status = login.PerformLogin(lastGeneratedUserName, "abc@123");
+         status = login.PerformLogin(lastGeneratedUserName, Password);
          //logStatus("Test Step", "User Perform Login: ", status ? "PASS" : "FAIL");
         assertTrue(status, "Failed to login with registered user");
 
@@ -82,15 +82,16 @@ public class QKART_Tests {
     /*
      * Verify that an existing user is not allowed to re-register on QKart
      */
-    @Test 
-    public void TestCase02() throws InterruptedException {
+    @Test (description= "Verify re-registering an already registered user fails", priority= 2, groups = {"Sanity"})
+    @Parameters ({"Username", "Password"})
+    public void TestCase02(String Username, String Password) throws InterruptedException {
         Boolean status;
        // logStatus("Start Testcase", "Test Case 2: Verify User Registration with an existing username ", "DONE");
 
         // Visit the Registration page and register a new user
         Register registration = new Register(driver);
         registration.navigateToRegisterPage();
-        status = registration.registerUser("testUser", "abc@123", true);
+        status = registration.registerUser(Username, Password, true);
         Assert.assertTrue("Registration failed", status);
         //logStatus("Test Step", "User Registration : ", status ? "PASS" : "FAIL");
         // if (!status) {
@@ -104,7 +105,7 @@ public class QKART_Tests {
         // Visit the Registration page and try to register using the previously
         // registered user's credentials
         registration.navigateToRegisterPage();
-        status = registration.registerUser(lastGeneratedUserName, "abc@123", false);
+        status = registration.registerUser(lastGeneratedUserName, Password, false);
         assertFalse(status, "Failed to register using the previously registered user's credentials");
 
         // If status is true, then registration succeeded, else registration has
@@ -115,8 +116,9 @@ public class QKART_Tests {
     /*
      * Verify the functinality of the search text box
      */
-    @Test 
-    public void TestCase03() throws InterruptedException {
+    @Test (description= "Verify the functionality of search text box", priority= 3, groups ={"Sanity"} )
+    @Parameters ({"product", "Noproduct"})
+    public void TestCase03(String product, String Noproduct) throws InterruptedException {
         //logStatus("TestCase 3", "Start test case : Verify functionality of search box ", "DONE");
         boolean status;
 
@@ -126,7 +128,7 @@ public class QKART_Tests {
         Assert.assertTrue(homePage.navigateToHome());
 
         // Search for the "yonex" product
-        status = homePage.searchForProduct("YONEX");
+        status = homePage.searchForProduct(product);
         Assert.assertTrue("No product found", status);
         // if (!status) {
         //     logStatus("TestCase 3", "Test Case Failure. Unable to search for given product", "FAIL");
@@ -156,7 +158,7 @@ public class QKART_Tests {
         //logStatus("Step Success", "Successfully validated the search results ", "PASS");
 
         // Search for product
-        status = homePage.searchForProduct("Gesundheit");
+        status = homePage.searchForProduct(Noproduct);
         Assert.assertFalse("product found", status);
         // if (status) {
         //     logStatus("TestCase 3", "Test Case Failure. Invalid keyword returned results", "FAIL");
@@ -181,8 +183,9 @@ public class QKART_Tests {
      * Verify the presence of size chart and check if the size chart content is as
      * expected
      */
-    @Test
-    public void TestCase04() throws InterruptedException {
+    @Test (description= "Verify the existence of size chart for certain items and validate contents of size chart", priority= 4, groups = {"Regression_Test"})
+    @Parameters ({"productName"})
+    public void TestCase04(String productName) throws InterruptedException {
         //logStatus("TestCase 4", "Start test case : Verify the presence of size Chart", "DONE");
         boolean status = false;
 
@@ -192,7 +195,7 @@ public class QKART_Tests {
         Assert.assertTrue(homePage.navigateToHome());
 
         // Search for product and get card content element of search results
-        status = homePage.searchForProduct("Running Shoes");
+        status = homePage.searchForProduct(productName);
         Assert.assertTrue("No product found", status);
         List<WebElement> searchResults = homePage.getSearchResults();
 
@@ -248,8 +251,9 @@ public class QKART_Tests {
      * Verify the complete flow of checking out and placing order for products is
      * working correctly
      */
-    @Test
-    public void TestCase05() throws InterruptedException {
+    @Test (description= "Verify that a new user can add multiple products in to the cart and Checkout", priority= 5, groups = {"Sanity"})
+    @Parameters ({"Username", "Password", "productName1", "productName2"})
+    public void TestCase05(String Username,String Password, String productName1, String productName2) throws InterruptedException {
         Boolean status;
         //logStatus("Start TestCase", "Test Case 5: Verify Happy Flow of buying products", "DONE");
 
@@ -258,7 +262,7 @@ public class QKART_Tests {
         registration.navigateToRegisterPage();
 
         // Register a new user
-        status = registration.registerUser("testUser", "abc@123", true);
+        status = registration.registerUser(Username, Password, true);
         Assert.assertTrue("Registration failed", status);
         // if (!status) {
         //     logStatus("TestCase 5", "Test Case Failure. Happy Flow Test Failed", "FAIL");
@@ -272,7 +276,7 @@ public class QKART_Tests {
         login.navigateToLoginPage();
 
         // Login with the newly registered user's credentials
-        status = login.PerformLogin(lastGeneratedUserName, "abc@123");
+        status = login.PerformLogin(lastGeneratedUserName, Password);
         assertTrue(status, "Failed to login with registered user");
 
         // if (!status) {
@@ -286,11 +290,11 @@ public class QKART_Tests {
         Assert.assertTrue(homePage.navigateToHome());
         // Find required products by searching and add them to the user's cart
         status = homePage.searchForProduct("YONEX");
-        homePage.addProductToCart("YONEX Smash Badminton Racquet");
-        assertTrue(homePage.addProductToCart("YONEX Smash Badminton Racquet"), "failed to add to cart");
+        homePage.addProductToCart(productName1);
+        assertTrue(homePage.addProductToCart(productName1), "failed to add to cart");
         status = homePage.searchForProduct("Tan");
-        homePage.addProductToCart("Tan Leatherette Weekender Duffle");
-        assertTrue(homePage.addProductToCart("Tan Leatherette Weekender Duffle"), "failed to add to cart");
+        homePage.addProductToCart(productName2);
+        assertTrue(homePage.addProductToCart(productName2), "failed to add to cart");
         // Click on the checkout button
         homePage.clickCheckout();
         //assertTrue(homePage.clickCheckout(), "Failed to checkout");
@@ -322,8 +326,9 @@ public class QKART_Tests {
     /*
      * Verify the quantity of items in cart can be updated
      */
-    @Test
-    public void TestCase06() throws InterruptedException {
+    @Parameters ({"Username", "Password", "address","TC6_ProductNameToSearch1", "TC6_ProductNameToSearch2"})
+    @Test (description= "Verify that the contents of the cart can be edited", priority= 6, groups = {"Regression_Test"})
+    public void TestCase06(String Username, String Password,String address, String TC6_ProductNameToSearch1, String TC6_ProductNameToSearch2) throws InterruptedException {
         Boolean status;
         //logStatus("Start TestCase", "Test Case 6: Verify that cart can be edited", "DONE");
         Home homePage = new Home(driver);
@@ -331,7 +336,7 @@ public class QKART_Tests {
         Login login = new Login(driver);
 
         registration.navigateToRegisterPage();
-        status = registration.registerUser("testUser", "abc@123", true);
+        status = registration.registerUser(Username, Password, true);
         Assert.assertTrue("Registration failed", status);
         // if (!status) {
         //     logStatus("Step Failure", "User Perform Register Failed", status ? "PASS" : "FAIL");
@@ -341,7 +346,7 @@ public class QKART_Tests {
         lastGeneratedUserName = registration.lastGeneratedUsername;
 
         login.navigateToLoginPage();
-        status = login.PerformLogin(lastGeneratedUserName, "abc@123");
+        status = login.PerformLogin(lastGeneratedUserName, Password);
         Assert.assertTrue("Login failed", status);
         // if (!status) {
         //     logStatus("Step Failure", "User Perform Login Failed", status ? "PASS" : "FAIL");
@@ -351,26 +356,26 @@ public class QKART_Tests {
 
         homePage.navigateToHome();
         status = homePage.searchForProduct("Xtend");
-        assertTrue(homePage.addProductToCart("Xtend Smart Watch"));
+        assertTrue(homePage.addProductToCart(TC6_ProductNameToSearch1));
 
         status = homePage.searchForProduct("Yarine");
-        assertTrue(homePage.addProductToCart("Yarine Floor Lamp"));
+        assertTrue(homePage.addProductToCart(TC6_ProductNameToSearch2));
 
         // update watch quantity to 2
-        homePage.changeProductQuantityinCart("Xtend Smart Watch", 2);
+        homePage.changeProductQuantityinCart(TC6_ProductNameToSearch1, 2);
 
         // update table lamp quantity to 0
-        homePage.changeProductQuantityinCart("Yarine Floor Lamp", 0);
+        homePage.changeProductQuantityinCart(TC6_ProductNameToSearch2, 0);
 
         // update watch quantity again to 1
-        homePage.changeProductQuantityinCart("Xtend Smart Watch", 1);
+        homePage.changeProductQuantityinCart(TC6_ProductNameToSearch1, 1);
 
         status = homePage.clickCheckout();
         Assert.assertTrue("Checkout Failed", status);
 
         Checkout checkoutPage = new Checkout(driver);
-        checkoutPage.addNewAddress("Addr line 1 addr Line 2 addr line 3");
-        checkoutPage.selectAddress("Addr line 1 addr Line 2 addr line 3");
+        checkoutPage.addNewAddress(address);
+        checkoutPage.selectAddress(address);
 
         status = checkoutPage.placeOrder();
         Assert.assertTrue("order place Failed", status);
@@ -394,11 +399,12 @@ public class QKART_Tests {
     /*
      * Verify that the cart contents are persisted after logout
      */
-    @Test
-    public void TestCase07() throws InterruptedException {
-        Boolean status = false;
-        List<String> expectedResult = Arrays.asList("Stylecon 9 Seater RHS Sofa Set ",
-                "Xtend Smart Watch");
+    @Test (description= "Verify that the contents made to the cart are saved against the user's login details", priority= 7, groups = {"Regression_Test"})
+    @Parameters ({"Username", "Password", "TC7_ListOfProductsToAddToCart" })
+    public void TestCase07(String Username,String Password, String TC7_ListOfProductsToAddToCart ) throws InterruptedException {
+        Boolean status = false ;
+    String[] expectedResult = TC7_ListOfProductsToAddToCart.split(";");
+    List <String> products = Arrays.asList(expectedResult[0], expectedResult[1]);
 
        //logStatus("Start TestCase", "Test Case 7: Verify that cart contents are persisted after logout", "DONE");
 
@@ -427,17 +433,17 @@ public class QKART_Tests {
 
         homePage.navigateToHome();
         status = homePage.searchForProduct("Stylecon");
-        homePage.addProductToCart("Stylecon 9 Seater RHS Sofa Set ");
+        homePage.addProductToCart(products.get(0));
 
         status = homePage.searchForProduct("Xtend");
-        homePage.addProductToCart("Xtend Smart Watch");
+        homePage.addProductToCart(products.get(1));
 
         homePage.PerformLogout();
 
         login.navigateToLoginPage();
         status = login.PerformLogin(lastGeneratedUserName, "abc@123");
         assertTrue(status, "Failed to login with registered user");
-        status = homePage.verifyCartContents(expectedResult);
+        status = homePage.verifyCartContents(products);
         assertTrue(status, "cart is empty");
 
         //logStatus("End TestCase", "Test Case 7: Verify that cart contents are persisted after logout: ",
@@ -446,8 +452,9 @@ public class QKART_Tests {
         homePage.PerformLogout();
      
     }
-    @Test
-    public void TestCase08() throws InterruptedException {
+    @Test (description= "Verify that insufficient balance error is thrown when the wallet balance is not enough", priority= 8, groups = {"Sanity"})
+    @Parameters ({"Username", "Password", "productName3", "address" })
+    public void TestCase08(String Username, String Password,  String productName3, String address) throws InterruptedException {
         Boolean status;
         // //logStatus("Start TestCase",
         //         "Test Case 8: Verify that insufficient balance error is thrown when the wallet balance is not enough",
@@ -455,7 +462,7 @@ public class QKART_Tests {
 
         Register registration = new Register(driver);
         registration.navigateToRegisterPage();
-        status = registration.registerUser("testUser", "abc@123", true);
+        status = registration.registerUser(Username, Password, true);
         Assert.assertTrue("Registration failed", status);
         // if (!status) {
         //     logStatus("Step Failure", "User Perform Registration Failed", status ? "PASS" : "FAIL");
@@ -468,7 +475,7 @@ public class QKART_Tests {
 
         Login login = new Login(driver);
         login.navigateToLoginPage();
-        status = login.PerformLogin(lastGeneratedUserName, "abc@123");
+        status = login.PerformLogin(lastGeneratedUserName, Password);
         Assert.assertTrue("Login failed", status);
         // if (!status) {
         //     logStatus("Step Failure", "User Perform Login Failed", status ? "PASS" : "FAIL");
@@ -482,15 +489,15 @@ public class QKART_Tests {
         homePage.navigateToHome();
         Assert.assertTrue(homePage.navigateToHome());
         status = homePage.searchForProduct("Stylecon");
-        homePage.addProductToCart("Stylecon 9 Seater RHS Sofa Set ");
+        homePage.addProductToCart(productName3);
 
-        homePage.changeProductQuantityinCart("Stylecon 9 Seater RHS Sofa Set ", 10);
+        homePage.changeProductQuantityinCart(productName3, 10);
 
         status = homePage.clickCheckout();
         Assert.assertTrue("Checkout Failed", status);
         Checkout checkoutPage = new Checkout(driver);
-        checkoutPage.addNewAddress("Addr line 1 addr Line 2 addr line 3");
-       status = checkoutPage.selectAddress("Addr line 1 addr Line 2 addr line 3");
+        checkoutPage.addNewAddress(address);
+       status = checkoutPage.selectAddress(address);
 
         status = checkoutPage.placeOrder();
         Thread.sleep(3000);
@@ -502,7 +509,8 @@ public class QKART_Tests {
         //         "Test Case 8: Verify that insufficient balance error is thrown when the wallet balance is not enough: ",
         //         status ? "PASS" : "FAIL");
     }
-    @Test (dependsOnMethods = {"TestCase10"})
+    //@Parameters ({"Username", "Password", "productName1" })
+    @Test (dependsOnMethods = {"TestCase10"}, description= "Verify that a product added to a cart is available when a new tab is added", priority= 10, groups = {"Regression_Test"})
     public void TestCase09() throws InterruptedException {
         Boolean status = false;
 
@@ -564,7 +572,7 @@ public class QKART_Tests {
         // status ? "PASS" : "FAIL");
         // takeScreenshot(driver, "EndTestCase", "TestCase09");
     }
-    @Test
+    @Test (description= "Verify that privacy policy and about us links are working fine", priority= 9, groups = {"Regression_Test"})
     public void TestCase10() throws InterruptedException {
         Boolean status = false;
 
@@ -656,8 +664,9 @@ public class QKART_Tests {
         // "PASS");
         // takeScreenshot(driver, "EndTestCase", "TestCase10");
     }
-    @Test
-    public void TestCase11() throws InterruptedException {
+    @Parameters({"ContactusUserName", "ContactUsEmail","QueryContent"})
+    @Test (description= "Verify that the contact us dialog works fine", priority=11, groups = {"Regression_Test"})
+    public void TestCase11(String ContactusUserName,String ContactUsEmail, String QueryContent ) throws InterruptedException {
         Boolean status = false;
         // logStatus("Start TestCase",
         //         "Test Case 11: Verify that contact us option is working correctly ",
@@ -670,11 +679,11 @@ public class QKART_Tests {
         driver.findElement(By.xpath("//*[text()='Contact us']")).click();
 
         WebElement name = driver.findElement(By.xpath("//input[@placeholder='Name']"));
-        name.sendKeys("crio user");
+        name.sendKeys(ContactusUserName);
         WebElement email = driver.findElement(By.xpath("//input[@placeholder='Email']"));
-        email.sendKeys("criouser@gmail.com");
+        email.sendKeys(ContactUsEmail);
         WebElement message = driver.findElement(By.xpath("//input[@placeholder='Message']"));
-        message.sendKeys("Testing the contact us page");
+        message.sendKeys(QueryContent);
 
         WebElement contactUs = driver.findElement(
                 By.xpath("/html/body/div[2]/div[3]/div/section/div/div/div/form/div/div/div[4]/div/button"));
@@ -693,8 +702,9 @@ public class QKART_Tests {
 
         // takeScreenshot(driver, "EndTestCase", "TestCase11");
     }
-    @Test
-    public void TestCase12() throws InterruptedException {
+    @Parameters ({"Username", "Password", "productName1", "address" })
+    @Test (description= "Ensure that the Advertisement Links on the QKART page are clickable", priority= 12, groups = {"Sanity"})
+    public void TestCase12(String Username,String Password, String productName1,String address) throws InterruptedException {
         Boolean status = false;
         // logStatus("Start TestCase",
         //         "Test Case 12: Ensure that the links on the QKART advertisement are clickable",
@@ -703,7 +713,7 @@ public class QKART_Tests {
 
         Register registration = new Register(driver);
         registration.navigateToRegisterPage();
-        status = registration.registerUser("testUser", "abc@123", true);
+        status = registration.registerUser(Username, Password, true);
         Assert.assertTrue("Registration failed", status);
         // if (!status) {
         //     logStatus("TestCase 12",
@@ -715,7 +725,7 @@ public class QKART_Tests {
 
         Login login = new Login(driver);
         login.navigateToLoginPage();
-        status = login.PerformLogin(lastGeneratedUserName, "abc@123");
+        status = login.PerformLogin(lastGeneratedUserName, Password);
         assertTrue(status, "Failed to login with registered user");
         // if (!status) {
         //     logStatus("Step Failure", "User Perform Login Failed", status ? "PASS" : "FAIL");
@@ -729,18 +739,18 @@ public class QKART_Tests {
         homePage.navigateToHome();
         Assert.assertTrue(homePage.navigateToHome());
 
-         homePage.searchForProduct("YONEX Smash Badminton Racquet");
-         status = homePage.addProductToCart("YONEX Smash Badminton Racquet");
+         homePage.searchForProduct(productName1);
+         status = homePage.addProductToCart(productName1);
          Assert.assertTrue("add prooduct to cart failed", status);
 
-        status = homePage.changeProductQuantityinCart("YONEX Smash Badminton Racquet", 1);
+        status = homePage.changeProductQuantityinCart(productName1, 1);
         Assert.assertTrue("change product quantity failed", status);
         status = homePage.clickCheckout();
         Assert.assertTrue("checkout failed", status);
 
         Checkout checkoutPage = new Checkout(driver);
-        checkoutPage.addNewAddress("Addr line 1  addr Line 2  addr line 3");
-        checkoutPage.selectAddress("Addr line 1  addr Line 2  addr line 3");
+        checkoutPage.addNewAddress(address);
+        checkoutPage.selectAddress(address);
         status = checkoutPage.placeOrder();
         Thread.sleep(3000);
         Assert.assertTrue("place order failed", status);
